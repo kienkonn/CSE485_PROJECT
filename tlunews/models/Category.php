@@ -34,6 +34,7 @@ class Category {
         $this->name = $name;
     }
 
+
     //Chức năng cho thể loại
     // Lấy tất cả các danh sách thể loại
     public function getAllCategories() {
@@ -90,5 +91,6 @@ class Category {
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
+
 }
 ?>

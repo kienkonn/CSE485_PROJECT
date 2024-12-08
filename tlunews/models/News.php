@@ -29,7 +29,9 @@ class News {
         }
     }
 
+
     // Getter và setter
+
     public function getId() {
         return $this->id;
     }
@@ -72,6 +74,56 @@ class News {
 
     // Lấy tất cả các tin tức
     public function getAllNews() {
+
+        $query = "SELECT * FROM news";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $newsList = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $newsList[] = new self($row['id'], $row['title'], $row['content'], $row['image'], $row['category_id']);
+        }
+        return $newsList;
+    }
+
+
+    // Lấy tin tức theo ID
+    public function getNewsById($id) {
+        $query = "SELECT * FROM news WHERE id = :id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return new self($row['id'], $row['title'], $row['content'], $row['image'], $row['category_id']);
+        }
+        return null;  // Nếu không tìm thấy tin tức
+    }
+
+    
+    // Tìm kiếm tin tức
+    public function searchNews($keyword) {
+        $query = "SELECT * FROM news WHERE title LIKE :keyword OR content LIKE :keyword";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':keyword', '%' . $keyword . '%');
+        $stmt->execute();
+        $newsList = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $newsList[] = new self($row['id'], $row['title'], $row['content'], $row['image'], $row['category_id']);
+        }
+
+        return $newsList;
+    }
+    // Lấy tên thể loại
+    public function getCategoryName() {
+        $query = "SELECT name FROM categories WHERE id = :category_id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':category_id', $this->category_id);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $row['name'] : 'Chưa có danh mục';
+
         
     }
     // Lấy tin tức theo ID
@@ -110,6 +162,7 @@ class News {
     }
     public function searchNews($keyword) {
  
+
     }
 }
 ?>
