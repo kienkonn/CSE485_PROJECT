@@ -4,65 +4,26 @@ require_once APP_ROOT . '/models/Category.php';
 
 class NewsController {
 
-    // Thêm tin tức mới
-    public function add() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Nhận dữ liệu từ form
-            $title = $_POST['title'];
-            $content = $_POST['content'];
-            $image = $_POST['image']; 
-            $categoryId = $_POST['category_id'];
+    // Hiển thị danh sách tất cả tin tức
+    public function index() {
+        // Lấy tất cả các tin tức từ model News
+        $newsModel = new News();
+        $newsList = $newsModel->getAllNews();
 
-            // Thêm tin tức mới
-            $newsModel = new News();
-            if ($newsModel->addNews($title, $content, $image, $categoryId)) {
-                header('Location: index.php?controller=news&action=index');
-            } else {
-                $error = 'Lỗi khi thêm tin tức';
-                include APP_ROOT . '/views/admin/news/add.php';
-            }
-        } else {
-            $categoryModel = new Category(); 
-            $categories = $categoryModel->getAllCategories(); 
-            include APP_ROOT . '/views/admin/news/add.php';
-        }
+        // Gửi danh sách tin tức tới view
+        include APP_ROOT . '/views/home/index.php';
     }
 
-    // Cập nhật tin tức
-    public function edit($id) {
+    // Xem chi tiết một tin tức
+    public function view($id) {
         $newsModel = new News();
         $news = $newsModel->getNewsById($id);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $title = $_POST['title'];
-            $content = $_POST['content'];
-            $image = $_POST['image'];
-            $categoryId = $_POST['category_id'];
-
-            // Cập nhật tin tức
-            if ($newsModel->updateNews($id, $title, $content, $image, $categoryId)) {
-                header('Location: index.php?controller=news&action=index');
-            } else {
-                $error = 'Lỗi khi cập nhật tin tức';
-                include APP_ROOT . '/views/admin/news/edit.php';
-            }
+        if ($news !== null) {
+            // Nếu tin tức tồn tại, hiển thị chi tiết
+            include APP_ROOT . '/views/news/detail.php';
         } else {
-            // Hiển thị form chỉnh sửa tin tức
-            $categoryModel = new Category(); 
-            $categories = $categoryModel->getAllCategories(); // Lấy danh sách danh mục
-            include APP_ROOT . '/views/admin/news/edit.php';
-        }
-    }
-
-    // Xóa tin tức
-    public function delete($id) {
-        // Xóa tin tức theo ID
-        $newsModel = new News();
-        if ($newsModel->deleteNews($id)) {
             header('Location: index.php?controller=news&action=index');
-        } else {
-            $error = 'Lỗi khi xóa tin tức';
-            include APP_ROOT . '/views/admin/news/index.php';
         }
     }
 }

@@ -9,7 +9,6 @@ class News {
     private $category_id;
     private $db;
 
-    // Khởi tạo đối tượng News
     public function __construct($id = null, $title = null, $content = null, $image = null, $category_id = null) {
         $this->db = Database::getConnection();
         if ($id !== null) {
@@ -29,7 +28,6 @@ class News {
         }
     }
 
-    // Getter và setter
     public function getId() {
         return $this->id;
     }
@@ -72,44 +70,54 @@ class News {
 
     // Lấy tất cả các tin tức
     public function getAllNews() {
-        
+        $query = "SELECT * FROM news";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $newsList = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $newsList[] = new self($row['id'], $row['title'], $row['content'], $row['image'], $row['category_id']);
+        }
+        return $newsList;
     }
+
+
     // Lấy tin tức theo ID
     public function getNewsById($id) {
-        
-    }
-    // Thêm tin tức mới
-    public function addNews($title, $content, $image, $category_id) {
-        $query = "INSERT INTO news (title, content, image, category_id) VALUES (:title, :content, :image, :category_id)";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':title', $title);
-        $stmt->bindParam(':content', $content);
-        $stmt->bindParam(':image', $image);
-        $stmt->bindParam(':category_id', $category_id);
-        return $stmt->execute();
-    }
-
-    // Cập nhật tin tức
-    public function updateNews($id, $title, $content, $image, $category_id) {
-        $query = "UPDATE news SET title = :title, content = :content, image = :image, category_id = :category_id WHERE id = :id";
+        $query = "SELECT * FROM news WHERE id = :id";
         $stmt = $this->db->prepare($query);
         $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':title', $title);
-        $stmt->bindParam(':content', $content);
-        $stmt->bindParam(':image', $image);
-        $stmt->bindParam(':category_id', $category_id);
-        return $stmt->execute();
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            return new self($row['id'], $row['title'], $row['content'], $row['image'], $row['category_id']);
+        }
+        return null;  // Nếu không tìm thấy tin tức
     }
 
-    // Xóa tin tức
-    public function deleteNews($id) {
-        $query = "DELETE FROM news WHERE id = :id";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':id', $id);
-        return $stmt->execute();
-    }
+    
+    // Tìm kiếm tin tức
     public function searchNews($keyword) {
- 
+        $query = "SELECT * FROM news WHERE title LIKE :keyword OR content LIKE :keyword";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindValue(':keyword', '%' . $keyword . '%');
+        $stmt->execute();
+        $newsList = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $newsList[] = new self($row['id'], $row['title'], $row['content'], $row['image'], $row['category_id']);
+        }
+
+        return $newsList;
+    }
+    // Lấy tên thể loại
+    public function getCategoryName() {
+        $query = "SELECT name FROM categories WHERE id = :category_id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':category_id', $this->category_id);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $row['name'] : 'Chưa có danh mục';
     }
 }
 ?>
